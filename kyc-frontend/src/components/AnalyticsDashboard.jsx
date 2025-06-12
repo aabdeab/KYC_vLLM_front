@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, UserCheck, Clock, FileText, Search, Eye } from 'lucide-react';
 
+
 const API_BASE_URL = 'http://localhost:8080/api';
 
 const AnalyticsDashboard = ({ showMessage }) => {
@@ -21,7 +22,6 @@ const AnalyticsDashboard = ({ showMessage }) => {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      // Fetch data from multiple endpoints to build analytics
       const responses = await Promise.allSettled([
         fetch(`${API_BASE_URL}/users`),
         fetch(`${API_BASE_URL}/profiles/pending`),
@@ -66,120 +66,74 @@ const AnalyticsDashboard = ({ showMessage }) => {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Loading analytics...</div>;
+    return <div className="loading-text">Loading analytics...</div>;
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Analytics Dashboard</h2>
-        <button
-          onClick={fetchAnalytics}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
+    <div className="dashboard-container">
+      <div className="dashboard-header">
+        <h2>Analytics Dashboard</h2>
+        <button onClick={fetchAnalytics} className="refresh-button">
           Refresh
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <Users className="w-8 h-8 text-blue-500" />
-            <div className="ml-4">
-              <h3 className="text-2xl font-bold">{analytics.totalUsers}</h3>
-              <p className="text-gray-600">Total Users</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <UserCheck className="w-8 h-8 text-green-500" />
-            <div className="ml-4">
-              <h3 className="text-2xl font-bold">{analytics.verifiedUsers}</h3>
-              <p className="text-gray-600">Verified Users</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <Clock className="w-8 h-8 text-yellow-500" />
-            <div className="ml-4">
-              <h3 className="text-2xl font-bold">{analytics.pendingProfiles}</h3>
-              <p className="text-gray-600">Pending Profiles</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <FileText className="w-8 h-8 text-purple-500" />
-            <div className="ml-4">
-              <h3 className="text-2xl font-bold">{analytics.completedProfiles}</h3>
-              <p className="text-gray-600">Completed Profiles</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <Search className="w-8 h-8 text-orange-500" />
-            <div className="ml-4">
-              <h3 className="text-2xl font-bold">{analytics.matchingQueue}</h3>
-              <p className="text-gray-600">Matching Queue</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <Eye className="w-8 h-8 text-red-500" />
-            <div className="ml-4">
-              <h3 className="text-2xl font-bold">{analytics.screeningQueue}</h3>
-              <p className="text-gray-600">Screening Queue</p>
-            </div>
-          </div>
-        </div>
+      <div className="cards-grid">
+        <DashboardCard icon={<Users className="icon blue" />} label="Total Users" value={analytics.totalUsers} />
+        <DashboardCard icon={<UserCheck className="icon green" />} label="Verified Users" value={analytics.verifiedUsers} />
+        <DashboardCard icon={<Clock className="icon yellow" />} label="Pending Profiles" value={analytics.pendingProfiles} />
+        <DashboardCard icon={<FileText className="icon purple" />} label="Completed Profiles" value={analytics.completedProfiles} />
+        <DashboardCard icon={<Search className="icon orange" />} label="Matching Queue" value={analytics.matchingQueue} />
+        <DashboardCard icon={<Eye className="icon red" />} label="Screening Queue" value={analytics.screeningQueue} />
       </div>
 
-      {/* Progress Chart */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">Verification Progress</h3>
-        <div className="space-y-4">
-          <div>
-            <div className="flex justify-between mb-1">
-              <span className="text-sm font-medium">User Verification Rate</span>
-              <span className="text-sm text-gray-500">
-                {analytics.totalUsers > 0 ? Math.round((analytics.verifiedUsers / analytics.totalUsers) * 100) : 0}%
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-green-600 h-2 rounded-full" 
-                style={{ width: `${analytics.totalUsers > 0 ? (analytics.verifiedUsers / analytics.totalUsers) * 100 : 0}%` }}
-              ></div>
-            </div>
-          </div>
-
-          <div>
-            <div className="flex justify-between mb-1">
-              <span className="text-sm font-medium">Profile Completion Rate</span>
-              <span className="text-sm text-gray-500">
-                {analytics.totalUsers > 0 ? Math.round((analytics.completedProfiles / analytics.totalUsers) * 100) : 0}%
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-blue-600 h-2 rounded-full" 
-                style={{ width: `${analytics.totalUsers > 0 ? (analytics.completedProfiles / analytics.totalUsers) * 100 : 0}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
+      <div className="progress-section">
+        <h3>Verification Progress</h3>
+        <ProgressBar
+          label="User Verification Rate"
+          percentage={
+            analytics.totalUsers > 0
+              ? Math.round((analytics.verifiedUsers / analytics.totalUsers) * 100)
+              : 0
+          }
+          color="green"
+        />
+        <ProgressBar
+          label="Profile Completion Rate"
+          percentage={
+            analytics.totalUsers > 0
+              ? Math.round((analytics.completedProfiles / analytics.totalUsers) * 100)
+              : 0
+          }
+          color="blue"
+        />
       </div>
     </div>
   );
 };
+
+const DashboardCard = ({ icon, label, value }) => (
+  <div className="card">
+    <div className="card-content">
+      {icon}
+      <div className="card-text">
+        <h3>{value}</h3>
+        <p>{label}</p>
+      </div>
+    </div>
+  </div>
+);
+
+const ProgressBar = ({ label, percentage, color }) => (
+  <div className="progress-bar-container">
+    <div className="progress-header">
+      <span>{label}</span>
+      <span>{percentage}%</span>
+    </div>
+    <div className="progress-background">
+      <div className={`progress-fill ${color}`} style={{ width: `${percentage}%` }}></div>
+    </div>
+  </div>
+);
 
 export default AnalyticsDashboard;
